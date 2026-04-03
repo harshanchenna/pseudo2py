@@ -16,9 +16,12 @@ dependencies = [
 [project.scripts]
 pseudo2py = "pseudo2py.cli:main"
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
 [build-system]
 requires = ["hatchling"]
-build-backend = "hatchling.backends"
+build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pseudo2py"]
