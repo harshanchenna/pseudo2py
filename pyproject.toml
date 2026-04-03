@@ -1,0 +1,27 @@
+[project]
+name = "pseudo2py"
+version = "0.1.0"
+description = "A whiteboard that comes to life. Pseudocode in, runnable Python out."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.0",
+    "httpx>=0.27",
+    "duckduckgo-search>=7.0",
+    "rich>=13.0",
+    "click>=8.0",
+]
+
+[project.scripts]
+pseudo2py = "pseudo2py.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.backends"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pseudo2py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
