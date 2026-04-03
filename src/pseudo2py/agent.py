@@ -92,11 +92,14 @@ def run(pseudocode: str, config: Config, *, on_search: object = None) -> AgentRe
         text = choice.message.content or ""
         return _finalize(text, config, client, messages, searches)
 
-    # Exhausted iterations — try to extract whatever we have.
-    last_text = ""
-    if messages and messages[-1].get("content"):
-        last_text = messages[-1]["content"]
-    return _finalize(last_text, config, client, messages, searches)
+    # Exhausted iterations — make one final call without tools to force a response.
+    response = client.chat.completions.create(
+        model=config.llm.model,
+        messages=messages,
+        max_tokens=4096,
+    )
+    text = response.choices[0].message.content or ""
+    return _finalize(text, config, client, messages, searches)
 
 
 def _finalize(
@@ -141,7 +144,9 @@ def _finalize(
 
     retry_text = response.choices[0].message.content or ""
     code = extract_code(retry_text)
-    filename = extract_filename(retry_text) if extract_filename(retry_text) != "output.py" else filename
+    retry_filename = extract_filename(retry_text)
+    if retry_filename != "output.py":
+        filename = retry_filename
     requirements = extract_requirements(code)
 
     result = validate_syntax(code)
