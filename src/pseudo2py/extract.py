@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
+from pathlib import PurePosixPath
 
 
 # Common import-name → pip-package mismatches.
@@ -56,7 +57,10 @@ def extract_filename(text: str) -> str:
     """
     m = re.search(r"#\s*filename:\s*(\S+\.py)", text, re.IGNORECASE)
     if m:
-        return m.group(1)
+        # Strip directory components to prevent path traversal.
+        name = PurePosixPath(m.group(1)).name
+        if name.endswith(".py") and name != ".py":
+            return name
     return "output.py"
 
 
@@ -81,7 +85,7 @@ def extract_requirements(code: str) -> list[str]:
     # Filter to third-party only, map to pip names.
     packages: list[str] = []
     for mod in sorted(top_level_modules):
-        if mod in _STDLIB:
+        if not mod or mod in _STDLIB:
             continue
         packages.append(IMPORT_TO_PACKAGE.get(mod, mod))
 

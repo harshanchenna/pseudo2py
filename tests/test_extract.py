@@ -47,6 +47,18 @@ class TestExtractFilename:
         text = "#  filename:  sort_list.py\ncode"
         assert extract_filename(text) == "sort_list.py"
 
+    def test_path_traversal_stripped(self):
+        text = "# filename: ../../evil.py\ncode"
+        assert extract_filename(text) == "evil.py"
+
+    def test_absolute_path_stripped(self):
+        text = "# filename: /etc/passwd.py\ncode"
+        assert extract_filename(text) == "passwd.py"
+
+    def test_nested_path_stripped(self):
+        text = "# filename: src/utils/helper.py\ncode"
+        assert extract_filename(text) == "helper.py"
+
 
 class TestExtractRequirements:
     def test_simple_imports(self):
@@ -88,3 +100,8 @@ class TestExtractRequirements:
         code = "import pandas\nfrom pandas import DataFrame"
         reqs = extract_requirements(code)
         assert reqs.count("pandas") == 1
+
+    def test_relative_imports_excluded(self):
+        code = "from . import utils\nfrom .models import Foo\nimport pandas"
+        reqs = extract_requirements(code)
+        assert reqs == ["pandas"]
